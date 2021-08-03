@@ -3,7 +3,7 @@
  * Plugin Name: BellaCiao Importer
    * Description: BellaCiao importer plugin
    * Author: Alex Ischenko
-   * Version: 0.4
+   * Version: 0.5
    */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -11,6 +11,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class Bella_Importer {
+
+   const COMPARE_PAGE_SLUG = 'compare';
+   const WISHLIST_PAGE_SLUG = 'wishlist';
 
    public $posts;
 
@@ -47,6 +50,8 @@ class Bella_Importer {
 
    
    public function import_end() {
+
+      echo '<script>window.scrollTo( 0,document.body.scrollHeight );</script>';
       // 1. save elementor templates display condition 
       $this->update_templates_conditions(); 
       update_option( 'bella_importer_update_condition', 'update' );
@@ -65,8 +70,7 @@ class Bella_Importer {
    public function update_templates_conditions() {
       $cache = new ElementorPro\Modules\ThemeBuilder\Classes\Conditions_Cache();
       $cache->regenerate();
-      echo '<b>BellaCiao:</b> Elementor templates display conditions updated';
-      echo '<br>';
+      echo '<b>BellaCiao:</b> Elementor templates display conditions updated.<br>';
    }
    
 
@@ -108,8 +112,7 @@ class Bella_Importer {
 
          $kit->save( [ 'settings' => $new_settings ] );
 
-         echo '<b>BellaCiao:</b> Elementor Kit updated';
-         echo '<br>';
+         echo '<b>BellaCiao:</b> Elementor Kit updated.<br>';
       }
    }
    
@@ -118,11 +121,12 @@ class Bella_Importer {
 
    
    public function update_jcw_settings() {
-      $compare_page = get_page_by_path( 'compare' );
-      $wishlist_page = get_page_by_path( 'wishlist' );
+      $compare_page = get_page_by_path( self::COMPARE_PAGE_SLUG );
+      $wishlist_page = get_page_by_path( self::WISHLIST_PAGE_SLUG );
 
+      // reqiured settings to correct import templates
       $settings = array (
-         array (
+         array ( // enabled widgets
            'jet-compare-button' => 'true',
            'jet-compare-count-button' => 'true',
            'jet-compare-widget' => 'true',
@@ -131,22 +135,17 @@ class Bella_Importer {
            'jet-wishlist-widget' => 'true',
          ),
          'enable_compare' => 'true',
-         'save_user_compare_list' => 'true',
          'compare_page' => $compare_page->ID ?? '',
          'compare_page_max_items' => '3',
-         'add_default_compare_button' => 'true',
          'enable_wishlist' => 'true',
-         'save_user_wish_list' => 'false',
          'wishlist_page' => $wishlist_page->ID ?? '',
-         'add_default_wishlist_button' => 'false',
       );
 
       update_option( 'jet-cw-settings', $settings );
       
-      echo '<b>BellaCiao:</b> JetCompareWishlist settings updated';
-      echo 'Compare page ID: ' . $compare_page->ID ?? 'NOT EXIST, Please set proper Compare page <a href="' . get_admin_url() . 'admin.php?page=jet-dashboard-settings-page&subpage=jet-cw-compare-settings">here</a>';
-      echo 'Compare page ID: ' . $compare_page->ID ?? 'NOT EXIST, Please set proper Wishlist page <a href="' . get_admin_url() . 'admin.php?page=jet-dashboard-settings-page&subpage=jet-cw-wishlist-settings">here</a>';
-      echo '<br>';
+      echo '<b>BellaCiao:</b> JetCompareWishlist settings updated.<br>';
+      echo '&nbsp;&nbsp;&nbsp;Compare page ID: ' . ( isset( $compare_page->ID ) ? $compare_page->ID : 'NOT EXIST, Please set Compare page <a target="_blank" href="' . get_admin_url() . 'admin.php?page=jet-dashboard-settings-page&subpage=jet-cw-compare-settings">here</a>' ) . '<br>';
+      echo '&nbsp;&nbsp;&nbsp;Wishlist page ID: ' . ( isset( $wishlist_page->ID ) ? $wishlist_page->ID : 'NOT EXIST, Please set Wishlist page <a target="_blank" href="' . get_admin_url() . 'admin.php?page=jet-dashboard-settings-page&subpage=jet-cw-wishlist-settings">here</a>' ) . '<br>';
    }
    
 
