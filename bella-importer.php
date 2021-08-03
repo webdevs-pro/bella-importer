@@ -3,7 +3,7 @@
  * Plugin Name: BellaCiao Importer
    * Description: BellaCiao importer plugin
    * Author: Alex Ischenko
-   * Version: 0.3
+   * Version: 0.4
    */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -20,6 +20,10 @@ class Bella_Importer {
       add_action( 'import_end', array( $this, 'import_end' ), 10 );
    }
    
+
+
+
+
    public function init_update_conditions() {
       $update = get_option('my_option');
       if ( get_option( 'bella_importer_update_condition' ) == 'update' ){
@@ -27,13 +31,21 @@ class Bella_Importer {
          delete_option( 'bella_importer_update_condition' );
       }
    }
+   
 
+
+
+   
    public function filter_imported_posts( $posts ) {
       $this->posts = $posts;
       // error_log( "posts\n" . print_r($posts, true) . "\n" );
       return $posts;
    }
+   
 
+
+
+   
    public function import_end() {
       // 1. save elementor templates display condition 
       $this->update_templates_conditions(); 
@@ -45,12 +57,22 @@ class Bella_Importer {
       // 3. Update JetCompareWishlist plugin settings
       $this->update_jcw_settings();
    }
+   
 
+
+
+   
    public function update_templates_conditions() {
       $cache = new ElementorPro\Modules\ThemeBuilder\Classes\Conditions_Cache();
       $cache->regenerate();
+      echo '<b>BellaCiao:</b> Elementor templates display conditions updated';
+      echo '<br>';
    }
+   
 
+
+
+   
    public function set_kit_data() {
       $new_settings = '';
       foreach ( $this->posts as $post ) {
@@ -65,8 +87,6 @@ class Bella_Importer {
       if ( $new_settings ) {
          $kit = Elementor\Plugin::$instance->kits_manager->get_active_kit();
          $old_settings = $kit->get_meta( Elementor\Core\Settings\Page\Manager::META_KEY );
-
-         error_log( "old_settings bella\n" . print_r($old_settings, true) . "\n" );
          
          if ( ! $old_settings ) {
             $old_settings = [];
@@ -87,14 +107,52 @@ class Bella_Importer {
          // file_put_contents( $_SERVER['DOCUMENT_ROOT'] . 'bella.txt', print_r( $content, true) );
 
          $kit->save( [ 'settings' => $new_settings ] );
+
+         echo '<b>BellaCiao:</b> Elementor Kit updated';
+         echo '<br>';
       }
    }
+   
 
+
+
+   
    public function update_jcw_settings() {
+      $compare_page = get_page_by_path( 'compare' );
+      $wishlist_page = get_page_by_path( 'wishlist' );
 
+      $settings = array (
+         array (
+           'jet-compare-button' => 'true',
+           'jet-compare-count-button' => 'true',
+           'jet-compare-widget' => 'true',
+           'jet-wishlist-button' => 'true',
+           'jet-wishlist-count-button' => 'true',
+           'jet-wishlist-widget' => 'true',
+         ),
+         'enable_compare' => 'true',
+         'save_user_compare_list' => 'true',
+         'compare_page' => $compare_page->ID ?? '',
+         'compare_page_max_items' => '3',
+         'add_default_compare_button' => 'true',
+         'enable_wishlist' => 'true',
+         'save_user_wish_list' => 'false',
+         'wishlist_page' => $wishlist_page->ID ?? '',
+         'add_default_wishlist_button' => 'false',
+      );
 
+      update_option( 'jet-cw-settings', $settings );
+      
+      echo '<b>BellaCiao:</b> JetCompareWishlist settings updated';
+      echo 'Compare page ID: ' . $compare_page->ID ?? 'NOT EXIST, Please set proper Compare page <a href="' . get_admin_url() . 'admin.php?page=jet-dashboard-settings-page&subpage=jet-cw-compare-settings">here</a>';
+      echo 'Compare page ID: ' . $compare_page->ID ?? 'NOT EXIST, Please set proper Wishlist page <a href="' . get_admin_url() . 'admin.php?page=jet-dashboard-settings-page&subpage=jet-cw-wishlist-settings">here</a>';
+      echo '<br>';
    }
+   
 
+
+
+   
 }
 new Bella_Importer();
 
