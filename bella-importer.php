@@ -1,10 +1,10 @@
 <?php
 /**
  * Plugin Name: BellaCiao Importer
-   * Description: BellaCiao importer plugin
-   * Author: Alex Ischenko
-   * Version: 0.5
-   */
+ * Description: BellaCiao importer plugin
+ * Author: Alex Ischenko
+ * Version: 0.6
+ */
 
 if ( ! defined( 'ABSPATH' ) ) {
    exit; // Exit if accessed directly
@@ -14,8 +14,20 @@ class Bella_Importer {
 
    const COMPARE_PAGE_SLUG = 'compare';
    const WISHLIST_PAGE_SLUG = 'wishlist';
+   const HOME_PAGE_SLUG = 'home';
+   const ACCOUNT_PAGE_SLUG = 'account';
+   const EXCLUDE_POSTS = array(
+      'shop',
+      'checkout',
+      'cart',
+   );
 
+   
    public $posts;
+   
+
+
+
 
    public function __construct() {
       add_action( 'init', array( $this, 'init_update_conditions' ) );
@@ -40,6 +52,12 @@ class Bella_Importer {
 
    
    public function filter_imported_posts( $posts ) {
+      // exclude posts from import by slug
+      foreach( $posts as $index => $post ) {
+         if ( in_array( $post['post_name'], self::EXCLUDE_POSTS ) ) {
+            unset( $posts[$index] );
+         }
+      }
       $this->posts = $posts;
       // error_log( "posts\n" . print_r($posts, true) . "\n" );
       return $posts;
@@ -50,8 +68,9 @@ class Bella_Importer {
 
    
    public function import_end() {
-
+      // scroll page to bottom on import end
       echo '<script>window.scrollTo( 0,document.body.scrollHeight );</script>';
+
       // 1. save elementor templates display condition 
       $this->update_templates_conditions(); 
       update_option( 'bella_importer_update_condition', 'update' );
@@ -61,6 +80,12 @@ class Bella_Importer {
 
       // 3. Update JetCompareWishlist plugin settings
       $this->update_jcw_settings();
+
+      // 4. Set home page
+      $this->set_home_page();
+
+      // 4. Set account page
+      $this->set_account_page();
    }
    
 
@@ -144,10 +169,40 @@ class Bella_Importer {
       update_option( 'jet-cw-settings', $settings );
       
       echo '<b>BellaCiao:</b> JetCompareWishlist settings updated.<br>';
-      echo '&nbsp;&nbsp;&nbsp;Compare page ID: ' . ( isset( $compare_page->ID ) ? $compare_page->ID : 'NOT EXIST, Please set Compare page <a target="_blank" href="' . get_admin_url() . 'admin.php?page=jet-dashboard-settings-page&subpage=jet-cw-compare-settings">here</a>' ) . '<br>';
-      echo '&nbsp;&nbsp;&nbsp;Wishlist page ID: ' . ( isset( $wishlist_page->ID ) ? $wishlist_page->ID : 'NOT EXIST, Please set Wishlist page <a target="_blank" href="' . get_admin_url() . 'admin.php?page=jet-dashboard-settings-page&subpage=jet-cw-wishlist-settings">here</a>' ) . '<br>';
+      echo '&nbsp;&nbsp;&nbsp;Compare page ' . ( isset( $compare_page->ID ) ? 'set.' : 'not set. Please set Compare page <a target="_blank" href="' . get_admin_url() . 'admin.php?page=jet-dashboard-settings-page&subpage=jet-cw-compare-settings">here</a>' ) . '<br>';
+      echo '&nbsp;&nbsp;&nbsp;Wishlist page ' . ( isset( $wishlist_page->ID ) ? 'set.' : 'not set. Please set Wishlist page <a target="_blank" href="' . get_admin_url() . 'admin.php?page=jet-dashboard-settings-page&subpage=jet-cw-wishlist-settings">here</a>' ) . '<br>';
    }
+      
+
+
+
    
+   public function set_home_page() {
+      $home = get_page_by_path( self::HOME_PAGE_SLUG );
+      if ( isset( $home->ID ) ) {
+         update_option( 'page_on_front', $home->ID );
+         update_option( 'show_on_front', 'page' );
+         echo '<b>BellaCiao:</b> Home page set.<br>';
+      } else {
+         echo '<b>BellaCiao:</b> Home page not set. (page with slug `<i>' . self::HOME_PAGE_SLUG . '</i>` not found.<br>';
+      }
+   }
+      
+
+
+
+   
+   public function set_account_page() {
+      $account = get_page_by_path( self::ACCOUNT_PAGE_SLUG );
+      $current_account_page = get_option( 'woocommerce_myaccount_page_id' );
+      wp_delete_post( get_option( 'woocommerce_myaccount_page_id' ), true ); // remove current account page
+      if ( isset( $account->ID ) ) {
+         update_option( 'woocommerce_myaccount_page_id', $account->ID );
+         echo '<b>BellaCiao:</b> Account page set.<br>';
+      } else {
+         echo '<b>BellaCiao:</b> Account page not set. (page with slug `<i>' . self::ACCOUNT_PAGE_SLUG . '</i>` not found.<br>';
+      }
+   }
 
 
 
