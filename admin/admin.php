@@ -43,7 +43,7 @@ class BCI_Admin {
 
                <?php 
                
-                  $check = BC_Importer::check_environment();
+                  $check = BC_Importer::before_import_checks();
 
                   echo '<div class="status">Status: ' . $check['status'] . '</div>';
 
