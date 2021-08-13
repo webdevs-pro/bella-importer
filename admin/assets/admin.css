@@ -20,3 +20,29 @@ pre {
    font-size: 12px;
    padding: 10px;
 }
+.bci-check-item {
+   margin-bottom: 0.2em;
+}
+.bci-check-item.status-good:before,
+.bci-check-item.status-bad:before {
+   margin-right: 0.2em;
+   font-size: 1.4em;
+   width: 1em;
+   display: inline-block;
+   text-align: center;
+   font-family: dashicons;
+   transform: translateY(0.3em);
+}
+.bci-check-item.status-good:before {
+   content: "\f147";
+   color: green;
+}
+
+.bci-check-item.status-bad:before {
+   content: "\f335";
+   color: red;
+}
+.bci-step-nav {
+   text-align: right;
+   margin: 10px 0 20px;
+}

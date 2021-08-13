@@ -42,17 +42,8 @@ class BCI_Admin {
             <div class="card bci-step bci-step-1">
 
                <?php 
-               
                   $check = BC_Importer::before_import_checks();
-
                   echo $check['html'];
-
-                  if ( $check['status'] ) {
-                     echo '<input type="submit" class="button button-primary" value="Import">';
-                  } 
-
-                  
-
                ?>
          
                   

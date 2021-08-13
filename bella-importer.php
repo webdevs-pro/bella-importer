@@ -3,7 +3,7 @@
  * Plugin Name: BellaCiao Importer
  * Description: BellaCiao importer plugin
  * Author: Alex Ischenko
- * Version: 0.2.2
+ * Version: 0.2.4
  */
 
 define( 'BCI_PLUGIN_DIR', dirname( __FILE__ ) );
@@ -26,7 +26,7 @@ class BC_Importer {
       'jet-search/jet-search.php' => 'JetSearch For Elementor',
       'jet-smart-filters/jet-smart-filters.php' => 'JetSmartFilters',
       'jet-woo-builder/jet-woo-builder.php' => 'JetWooBuilder For Elementor',
-      'jet-woo-product-gallery/jet-woo-product-gallery.php' => '',
+      'jet-woo-product-gallery/jet-woo-product-gallery.php' => 'JetProductGallery For Elementor',
       'mae-tabs/mae-tabs.php' => 'MAE Tabs',
       'mae-taxonomy-megamenu/mae-taxonomy-megamenu.php' => 'MAE Taxonomy Megamenu',
       'magnific-addons-for-elementor/magnific-addons-for-elementor.php' => 'Magnific Addons for Elementor',
@@ -119,6 +119,9 @@ class BC_Importer {
          $html .=  '</div>';
       }
 
+      $html .= '<div class="bci-step-nav">';
+         $html .= '<div class="button button-primary bci-show-step bci-show-step-2' . ( $status ? '' : ' disabled' ) . '">Continue</div>';
+      $html .= '</div>';
 
       ob_start();
          echo '<details>';
