@@ -1,55 +1,113 @@
 <?php
 
-// create custom plugin settings menu
-add_action('admin_menu', function() {
-   add_management_page( 
-      'BellaCiao Import', 
-      'BellaCiao Import', 
-      'manage_options', 
-      'bella-import', 
-      'bella_import_admin' 
-   );
-} );
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
+class BCI_Admin {
+
+   public function __construct() {
+      add_action( 'admin_menu', array( $this, 'admin_menu' ), 100 );
+      add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_css_and_js' ) );
+   }
+
+
+   public function admin_menu() {
+      add_submenu_page( 
+         'bella-settings',
+         'BellaCiao Import', 
+         'BellaCiao Import', 
+         'manage_options', 
+         'bella-importer', 
+         array( $this, 'import_page' ),
+         10
+      );
+   }
 
 
 
-function bella_import_admin() {
-   ?>
-<div class="wrap">
-   <h1>BellaCiao Import</h1>
-
-   <div class="card">
-      <form method="post" action="" enctype="multipart/form-data">
-
-         <table class="form-table">
-
-
-            <!-- FETCH NOW BUTTON -->
-            <tr valign="top">
-               <th scope="row">Upload XML</th>
-               <td>
-                  <input type="file" id="bella_importer_uload_file" name="bella_importer_uload_file">
-               </td>
-            </tr>
-
-            <!-- UPDATE EXISTING -->
-            <tr valign="top">
-               <th scope="row">Update existing episodes</th>
-               <td>
-                  <input type="checkbox" id="rfpi_update_existing" name="rfpi_update_existing"  value="1" <?php checked(get_option('rfpi_update_existing')); ?> autocomplete="off">
-               </td>
-            </tr>
+   public function enqueue_admin_css_and_js( $hook ) {
+      $current_screen = get_current_screen();
+      if ( $current_screen->base == 'bellaciao_page_bella-importer' ) {
+         wp_enqueue_style( 'bci-admin', BCI_PLUGIN_DIR_URL . '/admin/assets/admin.css', array(), time() );
+         wp_register_script( 'bci-admin', BCI_PLUGIN_DIR_URL . '/admin/assets/admin.js', array( 'jquery' ), time() );
+         wp_enqueue_script( 'bci-admin' );
+      }
+   }
 
 
-         </table>
-
+   public function import_page() {
+      ?>
+         <div class="wrap">
+            <h1>BellaCiao Import</h1>
          
-         <input type="submit" class="button button-primary" value="Import">
+            <div class="card bci-step bci-step-1">
 
-      </form>
-   </div>
+               <?php 
+               
+                  $check = BC_Importer::check_environment();
+
+                  echo '<div class="status">Status: ' . $check['status'] . '</div>';
+
+                  echo $check['response'];
+
+                  if ( $check['status'] == 'OK' ) {
+                     echo '<input type="submit" class="button button-primary" value="Import">';
+                  } 
+
+               ?>
+         
+                  
+               
+
+               
+            </div>
 
 
-</div>
-<?php 
+
+            <div class="card bci-step bci-step-2">
+
+               <form id="bella-import">
+         
+                  <table class="form-table">
+         
+         
+                     <!-- FETCH NOW BUTTON -->
+                     <tr valign="top">
+                        <th scope="row">Upload XML</th>
+                        <td>
+                           <input type="file" id="bella-import-file" name="bella-import-file">
+                        </td>
+                     </tr>
+         
+                     <!-- UPDATE EXISTING -->
+                     <tr valign="top">
+                        <th scope="row">Update existing episodes</th>
+                        <td>
+                           <input type="checkbox" id="rfpi_update_existing" name="rfpi_update_existing"  value="1" <?php checked(get_option('rfpi_update_existing')); ?> autocomplete="off">
+                        </td>
+                     </tr>
+         
+         
+                  </table>
+         
+                  
+                  <input type="submit" class="button button-primary" value="Import">
+
+                  <?php echo get_option('stylesheet'); ?>
+         
+               </form>
+
+            </div>
+         
+         
+         </div>
+      <?php 
+   }
+
 }
+
+
+
+
+
+
+
