@@ -45,13 +45,13 @@ class BCI_Admin {
                
                   $check = BC_Importer::before_import_checks();
 
-                  echo '<div class="status">Status: ' . $check['status'] . '</div>';
+                  echo $check['html'];
 
-                  echo $check['response'];
-
-                  if ( $check['status'] == 'OK' ) {
+                  if ( $check['status'] ) {
                      echo '<input type="submit" class="button button-primary" value="Import">';
                   } 
+
+                  
 
                ?>
          
@@ -101,6 +101,9 @@ class BCI_Admin {
          
          </div>
       <?php 
+
+
+      
    }
 
 }
