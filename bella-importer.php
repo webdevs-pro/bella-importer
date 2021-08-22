@@ -3,7 +3,7 @@
  * Plugin Name: BellaCiao Importer
  * Description: BellaCiao importer plugin
  * Author: Alex Ischenko
- * Version: 0.2.4
+ * Version: 0.3
  */
 
 define( 'BCI_PLUGIN_DIR', dirname( __FILE__ ) );
@@ -13,6 +13,16 @@ require_once ( BCI_PLUGIN_DIR . '/admin/admin.php' );
 
 
 class BC_Importer {
+
+   public static $required_environment = array(
+      'wp_version' => '5.8',
+      'php_version' => '7.3',
+   );
+
+   public static $required_themes = array(
+      'hello-elementor' => 'Hello Elementor',
+      'bellaciao-theme' => 'Bella Ciao',
+   );
 
    public static $required_plugins = array(
       'elementor-pro/elementor-pro.php' => 'Elementor Pro',
@@ -38,16 +48,6 @@ class BC_Importer {
 
 
 
-   
-   public static $required_environment = array(
-      'wp_version' => '5.8',
-      'php_version' => '7.3',
-   );
-
-
-
-
-
 
    
    const bella_theme_slug = 'bellaciao-theme';
@@ -61,6 +61,7 @@ class BC_Importer {
    public function __construct() {
       if ( get_option( 'stylesheet' ) == self::bella_theme_slug ) {
          new BCI_Admin();
+         add_action( 'wp_ajax_bci_upload_xml', array( $this, 'upload_xml' ) );
       } else {
          $this->show_no_theme_notice();
       }
@@ -89,12 +90,15 @@ class BC_Importer {
 
    
    public static function before_import_checks() {
+
+      
       $html = '';
 
       $environment = self::check_environment();
+      $themes = self::check_themes();
       $plugins = self::check_plugins();
 
-      if ( $environment['status'] && $plugins['status'] ) {
+      if ( $environment['status'] && $themes['status'] && $plugins['status'] ) {
          $html .= '<h2 class="bci-checks-status status-ok">Status: Ready for import</h2>';
          $status = true;
       } else {
@@ -109,6 +113,13 @@ class BC_Importer {
             if ( ! $item['status'] ) {
                $html .=  ' (minimum ' . $item['required'] . ' version required)';
             }
+         $html .=  '</div>';
+      }
+
+      $html .= '<h3>Themes:</h3>';
+      foreach ( $themes['themes'] as $item ) {
+         $html .=  '<div class="bci-check-item status-' . ( $item['status'] ? 'good' : 'bad' ) . '">';
+            $html .=  $item['name'];
          $html .=  '</div>';
       }
 
@@ -145,6 +156,63 @@ class BC_Importer {
 
 
 
+
+   public static function check_environment() {
+      $environment = array();
+      $status = true;
+      $environment['php_version'] = array(
+         'label' => 'PHP Version',
+         'required' => self::$required_environment['php_version'],
+         'current' => PHP_VERSION,
+         'status' => version_compare( PHP_VERSION, self::$required_environment['php_version'], '>=' ),
+      );
+      $environment['wp_version'] = array(
+         'label' => 'WordPress Version',
+         'required' => self::$required_environment['wp_version'],
+         'current' => get_bloginfo( 'version' ),
+         'status' => version_compare( get_bloginfo( 'version' ), self::$required_environment['wp_version'], '>=' ),
+      );
+
+      return array(
+         'environment' => $environment,
+         'status' => $environment['php_version']['status'] && $environment['wp_version']['status'] ? true : false,
+      );
+   }
+
+
+
+
+
+
+   public static function check_themes() {
+      $themes = array();
+      $installed_themes = wp_get_themes();
+      $status = true;
+      foreach ( self::$required_themes as $slug => $theme ) {
+         if ( array_key_exists( $slug, $installed_themes ) ) {
+            $themes[] = array(
+               'name' => $theme,
+               'status' => true
+            );
+         } else {
+            $themes[] = array(
+               'name' => $theme,
+               'status' => false
+            );
+            $status = false;
+         }
+      }
+      return array(
+         'themes' => $themes,
+         'status' => $status
+      );
+   }
+
+
+
+
+
+
    public static function check_plugins() {
       $plugins = array();
       $active_plugins = get_option( 'active_plugins' );
@@ -175,33 +243,23 @@ class BC_Importer {
 
 
 
-   public static function check_environment() {
-      $environment = array();
-      $status = true;
-      $environment['php_version'] = array(
-         'label' => 'PHP Version',
-         'required' => self::$required_environment['php_version'],
-         'current' => PHP_VERSION,
-         'status' => version_compare( PHP_VERSION, self::$required_environment['php_version'], '>=' ),
-      );
-      $environment['wp_version'] = array(
-         'label' => 'WordPress Version',
-         'required' => self::$required_environment['wp_version'],
-         'current' => get_bloginfo( 'version' ),
-         'status' => version_compare( get_bloginfo( 'version' ), self::$required_environment['wp_version'], '>=' ),
-      );
-
-      return array(
-         'environment' => $environment,
-         'status' => $environment['php_version']['status'] && $environment['wp_version']['status'] ? true : false,
-      );
+   public function upload_xml() {
+      require_once( 'class-wxr-parser-xml.php' );
+      $form_data = $_FILES;
+      $parser = new BCI_Parser_XML();
+      try {
+         $parse = $parser->parse( $_FILES['file']['tmp_name'] );
+         if ( ! is_wp_error( $parse ) ) {
+            echo json_encode( array( 'status' => 'ok', 'posts' => $parse ) );
+         } else {
+            echo json_encode( array( 'status' => 'error', 'message' => $parse->get_error_message() ) );
+         }
+      } catch (Exception $e) {
+         echo json_encode( array( 'status' => 'error', 'message' => $e->getMessage() ) );
+      }
+      error_log( "parse\n" . print_r( $parse, true ) . "\n" );
+      wp_die();
    }
-
-
-
-
-
-
    
 }
 new BC_Importer();

@@ -43,6 +43,7 @@ pre {
    color: red;
 }
 .bci-step-nav {
-   text-align: right;
+   display: flex;
+   justify-content: flex-end;
    margin: 10px 0 20px;
 }

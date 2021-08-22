@@ -54,6 +54,12 @@ class BCI_Admin {
 
 
 
+
+
+
+
+
+
             <div class="card bci-step bci-step-2">
 
                <form id="bella-import">
@@ -70,20 +76,65 @@ class BCI_Admin {
                      </tr>
          
                      <!-- UPDATE EXISTING -->
+                     <!--
                      <tr valign="top">
                         <th scope="row">Update existing episodes</th>
                         <td>
                            <input type="checkbox" id="rfpi_update_existing" name="rfpi_update_existing"  value="1" <?php checked(get_option('rfpi_update_existing')); ?> autocomplete="off">
                         </td>
                      </tr>
+                     -->
          
          
                   </table>
-         
-                  
-                  <input type="submit" class="button button-primary" value="Import">
 
-                  <?php echo get_option('stylesheet'); ?>
+                  <div id="error-response"></div>
+         
+                  <div class="bci-step-nav">
+                     <span class='spinner'></span>
+                     <input type="submit" class="button button-primary" value="Upload XML">
+                  </div>
+         
+               </form>
+
+            </div>
+
+
+
+
+
+
+
+
+
+
+            <div class="card bci-step bci-step-3">
+
+               <form id="bella-import">
+         
+                  <table class="form-table">
+         
+         
+
+         
+                     <!-- UPDATE EXISTING -->
+                     
+                     <tr valign="top">
+                        <th scope="row">Update existing episodes</th>
+                        <td>
+                           <input type="checkbox" id="rfpi_update_existing" name="rfpi_update_existing"  value="1" <?php checked(get_option('rfpi_update_existing')); ?> autocomplete="off">
+                        </td>
+                     </tr>
+                    
+         
+         
+                  </table>
+
+         
+                  <div class="bci-step-nav">
+                     <span class='spinner'></span>
+                     <input type="submit" class="button button-primary" value="Go">
+                  </div>
          
                </form>
 
