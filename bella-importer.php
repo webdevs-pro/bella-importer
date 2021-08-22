@@ -3,7 +3,7 @@
  * Plugin Name: BellaCiao Importer
  * Description: BellaCiao importer plugin
  * Author: Alex Ischenko
- * Version: 0.3
+ * Version: 0.4
  */
 
 define( 'BCI_PLUGIN_DIR', dirname( __FILE__ ) );

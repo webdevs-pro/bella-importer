@@ -1,6 +1,7 @@
 jQuery(document).ready(function( $ ) {
 
 	var posts = {};
+	var import_settings = {};
 
 	$( '.bci-show-step-2' ).on( 'click', function() {
 		$( '.bci-step-1' ).remove();
@@ -22,7 +23,7 @@ jQuery(document).ready(function( $ ) {
 
    
 	// Submit form data via Ajax
-	jQuery( '#bella-import' ).on( 'submit', function( e ) {
+	jQuery( '#bella-upload' ).on( 'submit', function( e ) {
 		e.preventDefault();
 
 		var fd = new FormData();
@@ -49,7 +50,6 @@ jQuery(document).ready(function( $ ) {
 					console.log( json.posts );
 					$( '.bci-step-2' ).remove();
 					$( '.bci-step-3' ).show();
-					step_3();
 				}
 				if ( status == 'error' ) {
 					$( '#error-response' ).html( json.message ); 
@@ -61,14 +61,26 @@ jQuery(document).ready(function( $ ) {
 
 		return false;
 	});
+	
+	
+	jQuery( '#bella-import-settings' ).on( 'submit', function( e ) {
+		e.preventDefault();
+		
+		import_settings = $( this ).serializeArray();
+		$( '.bci-step-3' ).remove();
+		$( '.bci-step-4' ).show();
+		import_data();
+		
+	} );
+	
+	
+	
+	
+		function import_data() {
+			$( '#import_steps_progress' ).show().attr( 'max', import_settings.length );
 
-
-
-	function step_3() {
-		alert();
-	}
-
-
-
+			
+			console.log(posts.posts.length);
+		}
 
 });
